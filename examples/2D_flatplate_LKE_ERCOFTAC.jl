@@ -1,9 +1,9 @@
 using XCALibre
-# using CUDA
+ using CUDA
 
 # backwardFacingStep_2mm, backwardFacingStep_10mm
 # mesh_file = "unv_sample_meshes/flatplate_transition.unv"
-# mesh_file = "unv_sample_meshes/flatplate_2D_lowRe.unv"
+ mesh_file = "unv_sample_meshes/flatplate_2D_lowRe.unv"
 # mesh_file = "unv_sample_meshes/cylinder_d10mm_5mm.unv"
 
 grids_dir = pkgdir(XCALibre, "examples/0_GRIDS")
@@ -165,14 +165,14 @@ initialise!(model.turbulence.nut, k_inlet/ω_inlet)
 residuals = run!(model, config); #, pref=0.0) # 9.39k allocs
 
 
-# let
-#     using Plots
-#     p = plot(; xlims=(0,runtime.iterations), ylims=(1e-10,0))
-#     plot!(1:length(residuals.Ux), residuals.Ux, yscale=:log10, label="Ux")
-#     plot!(1:length(residuals.Uy), residuals.Uy, yscale=:log10, label="Uy")
-#     plot!(1:length(residuals.p), residuals.p, yscale=:log10, label="p")
-#     display(p)
-# end
+ let
+     using Plots
+     p = plot(; xlims=(0,runtime.iterations), ylims=(1e-10,0))
+     plot!(1:length(residuals.Ux), residuals.Ux, yscale=:log10, label="Ux")
+     plot!(1:length(residuals.Uy), residuals.Uy, yscale=:log10, label="Uy")
+     plot!(1:length(residuals.p), residuals.p, yscale=:log10, label="p")
+     display(p)
+ end
 
 # using DelimitedFiles
 # using LinearAlgebra
