@@ -1,9 +1,9 @@
 using XCALibre
- using CUDA
+# using CUDA
 
 # backwardFacingStep_2mm, backwardFacingStep_10mm
 # mesh_file = "unv_sample_meshes/flatplate_transition.unv"
- mesh_file = "unv_sample_meshes/flatplate_2D_lowRe.unv"
+# mesh_file = "unv_sample_meshes/flatplate_2D_lowRe.unv"
 # mesh_file = "unv_sample_meshes/cylinder_d10mm_5mm.unv"
 
 grids_dir = pkgdir(XCALibre, "examples/0_GRIDS")
