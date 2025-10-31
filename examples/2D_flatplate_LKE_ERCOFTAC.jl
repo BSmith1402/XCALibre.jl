@@ -7,7 +7,7 @@ using XCALibre
 # mesh_file = "unv_sample_meshes/cylinder_d10mm_5mm.unv"
 
 grids_dir = pkgdir(XCALibre, "examples/0_GRIDS")
-grid = "flatplate_2D_lowRe.unv"
+grid = "Flatplate_2D_Mesh_BSTest.unv"
 mesh_file = joinpath(grids_dir, grid)
 
 mesh = UNV2D_mesh(mesh_file, scale=0.001)
