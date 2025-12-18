@@ -7,7 +7,7 @@ using XCALibre
 # mesh_file = "unv_sample_meshes/cylinder_d10mm_5mm.unv"
 
 grids_dir = pkgdir(XCALibre, "examples", "0_GRIDS")
-grid = "EROFATC_Plate_Example3.unv"
+grid = "NACA_2415_mesh.unv"
 mesh_file = joinpath(grids_dir, grid)
 
 mesh = UNV2D_mesh(mesh_file, scale=0.001)
@@ -45,7 +45,7 @@ BCs = assign(
         U = [
             Dirichlet(:Inlet, velocity),
             Zerogradient(:Outlet),
-            Wall(:Wall, [0.0, 0.0, 0.0]),
+            Wall(:Aerofoil, [0.0, 0.0, 0.0]),
             Extrapolated(:Freestream)
             # Zerogradient(:top)
             # Symmetry(:top)
@@ -53,7 +53,7 @@ BCs = assign(
         p = [
             Zerogradient(:Inlet),
             Dirichlet(:Outlet, 0.0),
-            Wall(:Wall),
+            Wall(:Aerofoil),
             Extrapolated(:Freestream)
             # Zerogradient(:top)
             # Symmetry(:top)
@@ -61,7 +61,7 @@ BCs = assign(
         k = [
             Dirichlet(:Inlet, k_inlet),
             Zerogradient(:Outlet),
-            Dirichlet(:Wall, 0.0),
+            Dirichlet(:Aerofoil, 0.0),
             Extrapolated(:Freestream)
             # Zerogradient(:top)
             # Symmetry(:top)
@@ -69,7 +69,7 @@ BCs = assign(
         kl = [
             Dirichlet(:Inlet, kL_inlet),
             Zerogradient(:Outlet),
-            Dirichlet(:Wall, 0.0),
+            Dirichlet(:Aerofoil, 0.0),
             Extrapolated(:Freestream)
             # Zerogradient(:top)
             # Symmetry(:top)
@@ -77,7 +77,7 @@ BCs = assign(
         omega = [
             Dirichlet(:Inlet, ω_inlet),
             Zerogradient(:Outlet),
-            OmegaWallFunction(:Wall),
+            OmegaWallFunction(:Aerofoil),
             Extrapolated(:Freestream)
             # Zerogradient(:top)
             # Symmetry(:top)
@@ -85,7 +85,7 @@ BCs = assign(
         nut = [
             Dirichlet(:Inlet, k_inlet/ω_inlet),
             Extrapolated(:Outlet),
-            Dirichlet(:Wall, 0.0), 
+            Dirichlet(:Aerofoil, 0.0), 
             Extrapolated(:Freestream)
             # Zerogradient(:top)
             # Symmetry(:top)
@@ -179,37 +179,37 @@ residuals = run!(model, config); #, pref=0.0) # 9.39k allocs
  using LinearAlgebra
  using Plots 
 
- Ex_data = readdlm("T3A_Experimental_Results.csv", ',', Float64, skipstart=1)
- eRex = Ex_data[:,1]
- eCf = Ex_data[:,2]
+# Ex_data = readdlm("T3A_Experimental_Results.csv", ',', Float64, skipstart=1)
+# eRex = Ex_data[:,1]
+# eCf = Ex_data[:,2]
 
- # OF_data = readdlm("T3A_Experimental_Results.csv", ',', Float64, skipstart=1)
- # oRex = OF_data[:,7].*velocity[1]./nu[1]
- # oCf = sqrt.(OF_data[:,12].^2 + OF_data[:,13].^2)/(0.5*velocity[1]^2)
+# OF_data = readdlm("T3A_Experimental_Results.csv", ',', Float64, skipstart=1)
+# oRex = OF_data[:,7].*velocity[1]./nu[1]
+# oCf = sqrt.(OF_data[:,12].^2 + OF_data[:,13].^2)/(0.5*velocity[1]^2)
+ 
+# model_cpu = adapt(CPU(), model)
 
- # model_cpu = adapt(CPU(), model)
+ tauw, pos = wall_shear_stress(:Aerofoil, model)
+ tauMag = [norm(tauw[i]) for i ∈ eachindex(tauw)]
+ tauMag = [tauw.x[i] for i ∈ eachindex(tauw)]
+ x = [pos[i][1] for i ∈ eachindex(pos)]
+ Rex = velocity[1].*x./nu
 
-  tauw, pos = wall_shear_stress(:Wall, model)
-  tauMag = [norm(tauw[i]) for i ∈ eachindex(tauw)]
-  tauMag = [tauw.x[i] for i ∈ eachindex(tauw)]
-  x = [pos[i][1] for i ∈ eachindex(pos)]
-  Rex = velocity[1].*x./nu
+ ustar = (tauMag./rho).^(1/2); # Friction velocity
+ yplus = ((2*ustar)/nu)
 
-  ustar = (tauMag./rho).^(1/2); # Friction velocity
-  yplus = ((2*ustar)/nu)
+# x_corr = [0:0.0002:2;]
+# Rex_corr = velocity[1].*x_corr/nu
+# Cf_corr = 0.0576.*(Rex_corr).^(-1/5)
+# Cf_laminar = 0.664.*(Rex_corr).^(-1/2)
 
- x_corr = [0:0.0002:2;]
- Rex_corr = velocity[1].*x_corr/nu
- Cf_corr = 0.0576.*(Rex_corr).^(-1/5)
- Cf_laminar = 0.664.*(Rex_corr).^(-1/2)
-
- p = plot(; xaxis="Rex", yaxis="Cf")
- plot!(Rex_corr, Cf_corr, color=:red, ylims=(0, 0.01), xlims=(0,6e5), label="Turbulent",lw=1.5)
- plot!(Rex_corr, Cf_laminar, color=:green, ylims=(0, 0.01), xlims=(0,6e5), label="Laminar",lw=1.5)
- scatter!(eRex, eCf, color=:green, label="Experimental T3A Data") # |> display
- # plot!(oRex, oCf, color=:green, lw=1.5,label="OpenFoam") |> display
- plot!(Rex,tauMag./(0.5*velocity[1]^2), color=:blue, lw=1.5,label="Code") |> display
- #savefig(p,"EROFATC_Plate_3.svg")
+# p = plot(; xaxis="Rex", yaxis="Cf")
+# plot!(Rex_corr, Cf_corr, color=:red, ylims=(0, 0.01), xlims=(0,6e5), label="Turbulent",lw=1.5)
+# plot!(Rex_corr, Cf_laminar, color=:green, ylims=(0, 0.01), xlims=(0,6e5), label="Laminar",lw=1.5)
+# scatter!(eRex, eCf, color=:green, label="Experimental T3A Data") # |> display
+# plot!(oRex, oCf, color=:green, lw=1.5,label="OpenFoam") |> display
+# plot!(Rex,tauMag./(0.5*velocity[1]^2), color=:blue, lw=1.5,label="Code") |> display
+# savefig(p,"EROFATC_Plate_3.svg")
 
 # plot(; xlims=(0,1000))
 # plot!(1:length(Rx), Rx, yscale=:log10, label="Ux")
