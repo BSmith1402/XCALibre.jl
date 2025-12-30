@@ -206,9 +206,9 @@ stress_tensor(U, ν, νt, config) = begin
     return Reff
 end
 
-static_pressure(patch::Symbol, model) = begin 
+static_pressure(patch::Symbol, model) = begin #Based on the Wall Shear Stress function
     mesh = model.domain
-    (; p, pf) = model.momentum
+    (; p, pf) = model.momentum #Obtains pressure values for each cell
     (; boundaries, boundary_cellsID, faces) = mesh
     ID = boundary_index(boundaries, patch)
     boundary = boundaries[ID]
@@ -217,8 +217,9 @@ static_pressure(patch::Symbol, model) = begin
     x = FaceScalarField(zeros(Float64, length(IDs_range)), mesh)
     y = FaceScalarField(zeros(Float64, length(IDs_range)), mesh)
     z = FaceScalarField(zeros(Float64, length(IDs_range)), mesh)
-    static_p = FaceVectorField(x,y,z, mesh)
+    static_p = FaceVectorField(x,y,z, mesh) #Makes a vector field for the static pressure at individual point
 
+    #Iterate through face IDs of the boundary and calcualte static pressure
     for i ∈ IDs_range
         pw = pf[i]
         surface_normal_gradient!(pw, p, static_p, IDs_range)
