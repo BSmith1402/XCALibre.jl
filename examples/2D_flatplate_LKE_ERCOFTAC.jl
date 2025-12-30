@@ -27,7 +27,8 @@ Tu = 0.03
 k_inlet = 0.0575 # k_inlet = 3/2*(Tu*velocity[1])^2
 kL_inlet = 0.0115 #1/2*(Tu*velocity[1])^2
 ω_inlet = 275 #k_inlet/(νR*nu)
-rho = 1.225/1000
+rho = 1.225 #Air density
+p_dynam = 0.5*rho*(velocity.^2) #Dynamic Pressure in Pa 
 
 # model = RANS{KOmegaLKE}(mesh=mesh, viscosity=nu, Tu=Tu)
 
@@ -182,6 +183,7 @@ residuals = run!(model, config); #, pref=0.0) # 9.39k allocs
 # Ex_data = readdlm("T3A_Experimental_Results.csv", ',', Float64, skipstart=1)
 # eRex = Ex_data[:,1]
 # eCf = Ex_data[:,2]
+# eCp = Ex_data[:,2]
 
 # OF_data = readdlm("T3A_Experimental_Results.csv", ',', Float64, skipstart=1)
 # oRex = OF_data[:,7].*velocity[1]./nu[1]
@@ -189,14 +191,20 @@ residuals = run!(model, config); #, pref=0.0) # 9.39k allocs
  
 # model_cpu = adapt(CPU(), model)
 
- tauw, pos = wall_shear_stress(:Aerofoil, model)
- tauMag = [norm(tauw[i]) for i ∈ eachindex(tauw)]
- tauMag = [tauw.x[i] for i ∈ eachindex(tauw)]
+# tauw, pos = wall_shear_stress(:Aerofoil, model)
+# tauMag = [norm(tauw[i]) for i ∈ eachindex(tauw)]
+# tauMag = [tauw.x[i] for i ∈ eachindex(tauw)]
+# x = [pos[i][1] for i ∈ eachindex(pos)]
+# Rex = velocity[1].*x./nu
+
+ static_p, pos = static_pressure(:Aerofoil, model)
+ pMag = [norm(static_p[i]) for i ∈ eachindex(static_p)]
+ pMag = [static_p.x[i] for i ∈ eachindex(static_p)]
  x = [pos[i][1] for i ∈ eachindex(pos)]
  Rex = velocity[1].*x./nu
 
- ustar = (tauMag./rho).^(1/2); # Friction velocity
- yplus = ((2*ustar)/nu)
+# ustar = (tauMag./(rho/1000)).^(1/2); # Friction velocity
+# yplus = ((2*ustar)/nu)
 
 # x_corr = [0:0.0002:2;]
 # Rex_corr = velocity[1].*x_corr/nu

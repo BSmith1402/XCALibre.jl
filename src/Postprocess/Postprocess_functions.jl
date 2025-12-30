@@ -206,6 +206,37 @@ stress_tensor(U, ν, νt, config) = begin
     return Reff
 end
 
+static_pressure(patch::Symbol, model) = begin 
+    mesh = model.domain
+    (; p, pf) = model.momentum
+    (; boundaries, boundary_cellsID, faces) = mesh
+    ID = boundary_index(boundaries, patch)
+    boundary = boundaries[ID]
+    (; IDs_range) = boundary
+
+    x = FaceScalarField(zeros(Float64, length(IDs_range)), mesh)
+    y = FaceScalarField(zeros(Float64, length(IDs_range)), mesh)
+    z = FaceScalarField(zeros(Float64, length(IDs_range)), mesh)
+    static_p = FaceVectorField(x,y,z, mesh)
+
+    for i ∈ IDs_range
+        pw = pf[i]
+        surface_normal_gradient!(pw, p, static_p, IDs_range)
+    end
+    
+    pos = fill(SVector{3,Float64}(0,0,0), length(IDs_range))
+    for i ∈ eachindex(static_p)
+        # fID = facesID[i]
+        # cID = cellsID[i]
+        fID = IDs_range[i]
+        # cID = boundary_cellsID[fID]
+        face = faces[fID]
+        pos[i] = face.centre
+    end
+    
+    return static_p, pos
+end
+
 # viscous_forces(patch::Symbol, Reff::TensorField, U::VectorField, rho, ν, νt) = begin
 #     mesh = U.mesh
 #     faces = mesh.faces
