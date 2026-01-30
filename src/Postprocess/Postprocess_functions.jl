@@ -1,6 +1,7 @@
 export boundary_average
 export pressure_force, viscous_force
 export stress_tensor, wall_shear_stress
+export static_pressure
 
 """
     pressure_force(patch::Symbol, p::ScalarField, rho)
