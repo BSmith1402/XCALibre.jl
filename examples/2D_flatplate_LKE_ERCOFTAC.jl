@@ -197,9 +197,7 @@ residuals = run!(model, config); #, pref=0.0) # 9.39k allocs
 # x = [pos[i][1] for i ∈ eachindex(pos)]
 # Rex = velocity[1].*x./nu
 
- static_p, pos = static_pressure(:Aerofoil, model)
- pMag = [norm(static_p[i]) for i ∈ eachindex(static_p)]
- pMag = [static_p.x[i] for i ∈ eachindex(static_p)]
+ local_p, pos = local_pressure(:Aerofoil, model)
  x = [pos[i][1] for i ∈ eachindex(pos)]
  Rex = velocity[1].*x./nu
 
